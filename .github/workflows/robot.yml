@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 jobs:
   build:
-    name: Run Tests
+    strategy:
     runs-on: ubuntu-latest
     
     - name: Set up Python
