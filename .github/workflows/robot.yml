@@ -6,8 +6,8 @@ on:
     - main
   workflow_dispatch:
 jobs:
-  test:
-    - name: Run Tests
+  build:
+    name: Run Tests
     runs-on: ubuntu-latest
     
     - name: Set up Python
