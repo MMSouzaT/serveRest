@@ -2,10 +2,16 @@
 name: CI
 
 on:
+  push:
+    branches:
+    - main
   workflow_dispatch:
-
 jobs:
   build:
+    strategy:
+      matrix:
+        python.version:
+        - 3.8
     runs-on: ubuntu-latest
     steps:
     - name: Instalar dependencias
