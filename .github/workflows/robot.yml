@@ -11,6 +11,7 @@ jobs:
         python.version:
         - 3.8
     runs-on: ubuntu-latest
+    steps:
     - name: Instalar dependencias
       run: |
         python -m pip install --upgrade pip
