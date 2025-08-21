@@ -4,78 +4,79 @@ Library         JSONLibrary
 Library         FakerLibrary
 Library         OperatingSystem
 Library         String
-Library    SeleniumLibrary
-Resource        variaveis.robot
+Resource        variables.robot
 
 *** Keywords ***
 
-Então devo capturar o Token
-    ${TOKEN}    Captura Token    ${emailLogin}    ${senhaLogin}
+Then Get Token
+    ${TOKEN}    Get new Token    ${generatedEmail}    ${password}
     Set Global Variable    ${TOKEN}
 
-Captura Token
-    [Arguments]    ${email}    ${senha}
-    ${json_body}    Alterar dados do body de autenticação    ${email}    ${senha}
+Get new Token
+    [Arguments]    ${emailReceived}    ${passwordReceived}
+    ${json_body}    Change json data    ${emailReceived}    ${passwordReceived}    login
     ${Headers}    Create Dictionary    content-type=application/json
-    ${resposta_auth}    POST On Session    Conexao_API    /login
+    ${resposta_auth}    POST On Session    API Conection     /login
     ...    json=${json_body}
     ...    headers=${Headers}
     ...    expected_status=200
-    Log To Console    Autenticado. 
+    Log To Console    Authenticated. 
     RETURN    ${resposta_auth.json()['authorization']}
 
-Dado que eu realize a conexão com a API
-    ${Conexao_API}    Conexao API
-    Set Global Variable     ${Conexao_API}     ${Conexao_API}
+Given i get the API conection
+    ${APIConection}    API Conection 
+    Set Global Variable     ${APIConection}     ${APIConection}
+    Generate data
 
-Conexao API
-    Create Session    Conexao_API    ${baseURL}
-    RETURN    Conexao_API
+API Conection
+    Create Session    APIConection    ${baseURL}
+    RETURN    APIConection
 
-Alterar dados do body cadastrar usuario
-    [Arguments]    ${email}    ${senha}    ${nome}    ${administrador}
-    ${body}    Get File    resources/data/cadastrar_usuario.json
+Generate data
+    ${generatedEmail}    FakerLibrary.Email
+    Set Global Variable    ${generatedEmail}    ${generatedEmail}
+    Log To Console    ${generatedEmail}
+
+    ${generatedName}    FakerLibrary.Name
+    Set Global Variable    ${generatedName}    ${generatedName}
+    Log To Console    ${generatedName}
+
+Change json data
+    [Arguments]    ${email}    ${password}    ${path}    ${name}=default    ${admin}=default    
+    ${body}    Get File    resources/data/${path}.json
     ${body}    Convert To String    ${body}
     
-    ${body}     Replace String Using Regexp     ${body}     nomeUsuario         ${nome}
-    ${body}     Replace String Using Regexp     ${body}     emailUsuario         ${email}
-    ${body}     Replace String Using Regexp     ${body}     senhaUsuario         ${senha}
-    ${body}     Replace String Using Regexp     ${body}     administradorInformado         ${administrador}
+    ${body}     Replace String Using Regexp     ${body}     nameUser         ${name}
+    ${body}     Replace String Using Regexp     ${body}     emailUser         ${email}
+    ${body}     Replace String Using Regexp     ${body}     passwordUser         ${password}
+    ${body}     Replace String Using Regexp     ${body}     adminPassed         ${admin}
 
     ${json_body}    Convert String To Json    ${body}
     RETURN    ${json_body}
 
-Alterar dados do body de autenticação
-    [Arguments]    ${email}    ${senha}
-    ${body}    Get File    resources/data/login.json
-    ${body}    Convert To String    ${body}
+When i create a new user
+    ${userIdCreated}    Create user    ${generatedEmail}    ${password}    ${generatedName}    true
+    Set Global Variable    ${userIdCreated}    ${userIdCreated}
+    Log To Console    ID Received: ${userIdCreated}
     
-    ${body}     Replace String Using Regexp     ${body}     emailLogin         ${email}
-    ${body}     Replace String Using Regexp     ${body}     senhaLogin         ${senha}
-
-    ${json_body}    Convert String To Json    ${body}
-    RETURN    ${json_body}
-
-Quando eu criar um usuário
-    ${idUsuarioCriado}    Criar usuario    ${emailLogin}    ${senhaLogin}    ${nome}    true
-    Set Global Variable    ${idUsuarioCriado}    ${idUsuarioCriado}
-Criar usuario
-    [Arguments]    ${email}    ${senha}    ${nome}    ${administrador}
-    ${json_body}    Alterar dados do body cadastrar usuario    ${email}    ${senha}    ${nome}    ${administrador}
+Create user
+    [Arguments]    ${emailReceived}    ${passwordReceived}    ${nameReceived}    ${admin}
+    ${json_body}    Change json data    ${emailReceived}    ${passwordReceived}    create_user    ${nameReceived}    ${admin}
     ${Headers}    Create Dictionary    content-type=application/json
-    ${resposta_criar_usuario}    POST On Session    Conexao_API    /usuarios
+    ${resposta_criar_usuario}    POST On Session    APIConection    /usuarios
     ...    json=${json_body}
     ...    headers=${Headers}
     ...    expected_status=201
     Log To Console    ${resposta_criar_usuario.json()['_id']}
     RETURN    ${resposta_criar_usuario.json()['_id']}
 
-E excluir o usuario
-    ${mensagem}    Excluir usuario    ${idUsuarioCriado}
+And exclude user
+    ${mensagem}    Delete user    ${userIdCreated}
     Log To Console    ${mensagem}
-Excluir usuario
-    [Arguments]    ${idUsuario}
-    ${resposta_delete}    DELETE On Session    Conexao_API    /usuarios/${idUsuario}
+
+Delete user
+    [Arguments]    ${idReceived}
+    ${resposta_delete}    DELETE On Session    APIConection    /usuarios/${idReceived}
     ...    expected_status=200
     
     RETURN    ${resposta_delete.json()['message']}
