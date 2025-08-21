@@ -5,7 +5,7 @@ on:
     branches:
     - main
   workflow_dispatch:
-phases:
+jobs:
   install:
     runtime-versions:
       python: 3.8
@@ -18,8 +18,3 @@ phases:
        - robot -d ./reportFolder -x report.xml tests/
        - zip -r reportFolder/reportFolder.zip reportFolder/
 
-artifacts:
-  base-directory: reportFolder
-  files:
-    - 'report.xml'
-    - 'reportFolder.zip'
